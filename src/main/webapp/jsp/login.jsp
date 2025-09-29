@@ -79,7 +79,6 @@
       width: 350px;
       animation: slideFadeIn 1s ease forwards;
       opacity: 0;
-      /* Adjusted height for CAPTCHA - removed fixed height */
     }
 
     @keyframes slideFadeIn {
@@ -205,14 +204,13 @@
     }
 
     .captcha-question-text {
-      /* Adjusted for better display of a 6-digit number */
       padding: 8px 15px;
       background-color: #f0f0f0;
       border: 1px dashed #667eea;
       border-radius: 8px;
-      font-size: 18px; /* Slightly larger font for clarity */
+      font-size: 18px;
       font-weight: bold;
-      letter-spacing: 2px; /* Spacing out the digits */
+      letter-spacing: 2px;
       color: #333;
       margin-right: 10px;
       min-width: 100px;
@@ -225,10 +223,47 @@
         text-align: left;
         margin-top: 5px;
     }
+
+    /* --- Custom Alert/Toast Styles - MODIFIED FOR TOP CENTER --- */
+    #custom-alert {
+        position: fixed;
+        top: 20px; /* Distance from the top */
+        
+        /* Centering horizontally: */
+        left: 50%;
+        transform: translateX(-50%) translateY(-100%); /* Start off-screen above the visible area */
+
+        background-color: #ff4c4c; /* Default: Red background for error */
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        
+        /* New transition for smooth slide-down/slide-up effect */
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        font-weight: 600;
+    }
+
+    #custom-alert.show {
+        opacity: 1;
+        visibility: visible;
+        /* Slide down to the 'top: 20px' position */
+        transform: translateX(-50%) translateY(0); 
+    }
+
+    /* Success style for the alert */
+    #custom-alert.success {
+        background-color: #28a745; /* Green background for success */
+    }
     
   </style>
 </head>
 <body>
+
+<div id="custom-alert"></div>
 <div class="flip-container" id="flip-card">
   <div class="flipper">
     
@@ -287,6 +322,8 @@
 
 <script>
 let correctCaptchaAnswer = "";
+let alertTimeout; // Variable to hold the timeout reference
+
 function generateCaptcha() {
     let captcha = '';
     for (let i = 0; i < 6; i++) {
@@ -299,23 +336,64 @@ function generateCaptcha() {
     document.getElementById('captcha-answer').value = '';
 }
 
+/**
+ * Shows the custom animated toast message.
+ * @param {string} message - The message to display.
+ * @param {boolean} isSuccess - True for success (green), false for error (red).
+ */
+function showCustomAlert(message, isSuccess) {
+    const customAlert = document.getElementById('custom-alert');
+    
+    // 1. Clear any existing timeout and reset classes
+    clearTimeout(alertTimeout);
+    customAlert.classList.remove('show', 'success');
+    
+    // 2. Set the message and apply success class if needed
+    customAlert.textContent = message;
+    if (isSuccess) {
+        customAlert.classList.add('success');
+    }
+
+    // 3. Make it visible/animate in
+    customAlert.classList.add('show');
+    
+    // 4. Set a timeout to automatically hide the alert after 3 seconds
+    alertTimeout = setTimeout(() => {
+        customAlert.classList.remove('show');
+    }, 3000);
+}
+
+
 function validateCaptcha(event) {
     const userAnswer = document.getElementById('captcha-answer').value;
     const errorElement = document.getElementById('captcha-error');
+    const successMessage = 'Security check passed! Logging in...';
     const errorMessage = 'Incorrect security code. Please try again.';
 
     if (userAnswer === correctCaptchaAnswer) {
+        // CAPTCHA CORRECT
+        event.preventDefault(); // Stop default submission to display toast
         errorElement.textContent = '';
-        return true; // Allow form submission
+        
+        showCustomAlert(successMessage, true); // Show green success toast
+
+        // Automatically submit the form after the toast starts animating (e.g., 500ms)
+        setTimeout(() => {
+            document.getElementById('login-form').submit();
+        }, 500);
+        
+        // Return false here because we are handling the submission manually with a delay
+        return false; 
+
     } else {
+        // CAPTCHA WRONG
         event.preventDefault(); // Stop form submission
         
         // 1. Display error on page (existing functionality)
         errorElement.textContent = errorMessage;
         
-        // 2. OPTIONAL: Show an alert pop-up (your request)
-        // Uncomment the line below if you want the disruptive alert message:
-        // alert(errorMessage); 
+        // 2. SHOW ANIMATED TOAST (Error)
+        showCustomAlert(errorMessage, false); 
         
         generateCaptcha(); // Generate a new CAPTCHA immediately
         return false;
@@ -326,6 +404,7 @@ function flipCard() {
   const card = document.getElementById('flip-card');
   const isFlipped = card.classList.contains('flipped');
   card.classList.toggle('flipped');
+  // Generate a new CAPTCHA only when flipping TO the login side (i.e., when isFlipped is true)
   if (isFlipped) {
       setTimeout(generateCaptcha, 500); 
   }
@@ -333,6 +412,7 @@ function flipCard() {
 
 window.onload = function() {
     const card = document.getElementById('flip-card');
+    // Generate CAPTCHA if the login form (front) is visible on load
     if (card && !card.classList.contains('flipped')) {
         generateCaptcha();
     }
