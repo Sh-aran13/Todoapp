@@ -14,24 +14,35 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Background Gradient Waves */
+    /* Background Gradient Waves - UPDATED FOR AURORA EFFECT */
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif; /* New Font Style */
+      font-family: 'Poppins', sans-serif;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(-45deg, #1e3c72, #2a5298, #0f2027, #203a43);
-      background-size: 400% 400%;
-      animation: gradientShift 12s ease infinite;
       color: #fff;
+      overflow: hidden; /* Hide scrollbars that might appear from background-size */
+
+      /* Aurora Borealis Background Layers */
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(200, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0) 20%),
+        radial-gradient(circle at 90% 80%, rgba(100, 255, 100, 0.2) 0%, rgba(0, 0, 0, 0) 20%),
+        linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); /* Deep Blue Base */
+      
+      background-size: 200% 200%, 200% 200%, cover;
+      animation: auroraMovement 30s ease infinite alternate;
     }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    /* Keyframe animation for the new Aurora movement */
+    @keyframes auroraMovement {
+      0% {
+        background-position: 0% 0%, 100% 100%, center;
+      }
+      100% {
+        background-position: 100% 100%, 0% 0%, center;
+      }
     }
 
     .container {
@@ -71,6 +82,7 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      /* Keeping the subtle floatUp animation for the card */
       animation: floatUp 6s ease-in-out infinite alternate;
     }
 
@@ -88,7 +100,7 @@
     .card label {
       font-weight: 600;
       font-size: 1.05em;
-      font-family:Cursive;
+      font-family: 'Poppins', sans-serif;
       text-align: left;
     }
 
@@ -111,6 +123,38 @@
       border: 1px solid #00d4ff;
       box-shadow: 0 0 12px #00d4ff;
     }
+    
+    /* --- NEW STATUS STYLES --- */
+    /* Base style for the select box text */
+    .status-select {
+        font-weight: 600;
+        /* Revert to a darker color for text that should stand out */
+        color: #333; 
+        background: #fff; 
+    }
+    
+    /* Style when the status is PENDING */
+    .status-select.pending {
+        color: #ff9800; /* Orange */
+        border: 2px solid #ff9800;
+        background: rgba(255, 152, 0, 0.1);
+    }
+
+    /* Style when the status is DONE */
+    .status-select.done {
+        color: #4caf50; /* Green */
+        border: 2px solid #4caf50;
+        background: rgba(76, 175, 80, 0.1);
+    }
+
+    /* Styling individual options (limited browser support, but good for some) */
+    .status-select option[value="PENDING"] {
+        color: #ff9800;
+    }
+    .status-select option[value="DONE"] {
+        color: #4caf50;
+    }
+    /* --- END NEW STATUS STYLES --- */
 
     .card button {
       align-self: center;
@@ -149,9 +193,9 @@
       <textarea name="description" rows="3"><%= t.getDescription()==null?"":t.getDescription() %></textarea>
 
       <label>Status</label>
-      <select name="status">
-        <option <%= "PENDING".equals(t.getStatus())?"selected":"" %>>PENDING</option>
-        <option <%= "DONE".equals(t.getStatus())?"selected":"" %>>DONE</option>
+      <select name="status" class="status-select <%= t.getStatus().toLowerCase() %>">
+        <option value="PENDING" <%= "PENDING".equals(t.getStatus()) ? "selected" : "" %>>PENDING</option>
+        <option value="DONE" <%= "DONE".equals(t.getStatus()) ? "selected" : "" %>>DONE</option>
       </select>
 
       <button type="submit"><i class="fas fa-save"></i> Save</button>

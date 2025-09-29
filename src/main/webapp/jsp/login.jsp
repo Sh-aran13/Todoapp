@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Login / Register</title>
   <link rel="stylesheet" href="../assets/styles.css">
   <style>
     body {
@@ -33,7 +33,7 @@
     .flip-container {
       perspective: 1000px;
       width: 350px;
-      height: 500px;
+      height: 550px; /* Increased height to accommodate CAPTCHA */
     }
     
     .flipper {
@@ -79,6 +79,7 @@
       width: 350px;
       animation: slideFadeIn 1s ease forwards;
       opacity: 0;
+      /* Adjusted height for CAPTCHA - removed fixed height */
     }
 
     @keyframes slideFadeIn {
@@ -189,6 +190,42 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    
+    /* --- CAPTCHA Specific Styles --- */
+    .captcha-group {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .captcha-question {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .captcha-question-text {
+      /* Adjusted for better display of a 6-digit number */
+      padding: 8px 15px;
+      background-color: #f0f0f0;
+      border: 1px dashed #667eea;
+      border-radius: 8px;
+      font-size: 18px; /* Slightly larger font for clarity */
+      font-weight: bold;
+      letter-spacing: 2px; /* Spacing out the digits */
+      color: #333;
+      margin-right: 10px;
+      min-width: 100px;
+      text-align: center;
+    }
+
+    #captcha-error {
+        color: #ff4c4c;
+        font-size: 12px;
+        text-align: left;
+        margin-top: 5px;
+    }
+    
   </style>
 </head>
 <body>
@@ -199,13 +236,22 @@
       <div class="card">
         <div class="header">
           <h2>Welcome back</h2>
-          <a href="jsp/login.jsp" onclick="flipCard(); return false;">Need an account?</a>
+          <a href="#" onclick="flipCard(); return false;">Need an account?</a>
         </div>
-        <form action="<%=request.getContextPath()%>/login" method="post">
+        <form id="login-form" action="<%=request.getContextPath()%>/login" method="post" onsubmit="return validateCaptcha(event)">
           <label>Email</label>
           <input type="email" name="email" required>
           <label>Password</label>
           <input type="password" name="password" required>
+          
+          <div class="captcha-group">
+            <label>Security Check (Enter the code below)</label>
+            <div class="captcha-question">
+              <span class="captcha-question-text" id="captcha-display"></span>
+              <input type="text" id="captcha-answer" name="captcha-answer" placeholder="Enter the 6 digits" maxlength="6" required>
+            </div>
+            <p id="captcha-error"></p>
+          </div>
           <button type="submit">Login</button>
         </form>
         <p style="color:#ff4c4c">
@@ -221,15 +267,16 @@
       <div class="card">
         <div class="header">
           <h2>Create an account</h2>
-          <a href="jsp/register.jsp" onclick="flipCard(); return false;">Already have an account?</a>
+          <a href="#" onclick="flipCard(); return false;">Already have an account?</a>
         </div>
-        <form action="<%=request.getContextPath()%>/register" method="post">
+        <form id="register-form" action="<%=request.getContextPath()%>/register" method="post">
           <label>Name</label>
           <input type="text" name="name" required>
           <label>Email</label>
           <input type="email" name="email" required>
           <label>Password</label>
           <input type="password" name="password" required>
+          
           <button type="submit">Register</button>
         </form>
       </div>
@@ -239,11 +286,57 @@
 </div>
 
 <script>
+let correctCaptchaAnswer = "";
+function generateCaptcha() {
+    let captcha = '';
+    for (let i = 0; i < 6; i++) {
+        captcha += Math.floor(Math.random() * 10).toString();
+    }
+    correctCaptchaAnswer = captcha;
+    const captchaDisplay = document.getElementById('captcha-display');
+    captchaDisplay.textContent = captcha;
+    document.getElementById('captcha-error').textContent = '';
+    document.getElementById('captcha-answer').value = '';
+}
+
+function validateCaptcha(event) {
+    const userAnswer = document.getElementById('captcha-answer').value;
+    const errorElement = document.getElementById('captcha-error');
+    const errorMessage = 'Incorrect security code. Please try again.';
+
+    if (userAnswer === correctCaptchaAnswer) {
+        errorElement.textContent = '';
+        return true; // Allow form submission
+    } else {
+        event.preventDefault(); // Stop form submission
+        
+        // 1. Display error on page (existing functionality)
+        errorElement.textContent = errorMessage;
+        
+        // 2. OPTIONAL: Show an alert pop-up (your request)
+        // Uncomment the line below if you want the disruptive alert message:
+        // alert(errorMessage); 
+        
+        generateCaptcha(); // Generate a new CAPTCHA immediately
+        return false;
+    }
+}
+
 function flipCard() {
   const card = document.getElementById('flip-card');
+  const isFlipped = card.classList.contains('flipped');
   card.classList.toggle('flipped');
+  if (isFlipped) {
+      setTimeout(generateCaptcha, 500); 
+  }
 }
-</script>
 
+window.onload = function() {
+    const card = document.getElementById('flip-card');
+    if (card && !card.classList.contains('flipped')) {
+        generateCaptcha();
+    }
+};
+</script>
 </body>
 </html>
