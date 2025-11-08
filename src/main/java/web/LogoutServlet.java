@@ -5,7 +5,9 @@ import javax.servlet.http.*;
 import java.io.IOException;
 
 public class LogoutServlet extends HttpServlet {
-    @Override
+	private static final long serialVersionUID = 1L;
+
+	@Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         

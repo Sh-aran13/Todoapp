@@ -13,7 +13,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-
+      
       /* New Animated Background */
       background: radial-gradient(circle at 50% 50%, #667eea, #764ba2, #9452b4, #b062c3);
       background-size: 200% 200%;
