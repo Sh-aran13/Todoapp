@@ -53,6 +53,13 @@
 
     <build>
         <finalName>todoapp</finalName>
+             
+        <!-- PostgreSQL Connector -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.6.0</version>
+        </dependency>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
