@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 public class DB {
-    private static final String URL = "jdbc:postgresql://localhost:5432/todoapp";
-    private static final String USER = "postgres";    // <- change
-    private static final String PASS = "1328";    // <- change
+    private static final String URL = "jdbc:postgresql://dpg-d47f16a4d50c7384hkc0-a:5432/todoapp_b1tw";
+    private static final String USER = todoapp_b1tw_user;    // <- change
+    private static final String PASS = ycJZRQke7IFfsbMZ4n3Uk6Z3ETlhxkyc";    // <- change
 
     static {
         try {
